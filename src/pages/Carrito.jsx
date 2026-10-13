@@ -1,0 +1,9 @@
+import { Link } from "react-router-dom";
+import { useStore } from "../context/StoreContext.jsx";
+import { formatearCLP } from "../utils/formato.js";
+
+export default function Carrito() {
+  const { carrito, cambiarCantidad, total } = useStore();
+  if (!carrito.length) return <section className="empty"><h1>Tu carrito está vacío</h1><p>Agrega instrumentos y accesorios desde el catálogo para continuar.</p><Link className="boton" to="/catalogo">Ir al catálogo</Link></section>;
+  return <section><div className="page-heading"><p className="eyebrow">Compra en línea</p><h1>Tu carrito</h1></div><div className="carrito-layout"><div className="lista-carrito">{carrito.map((item) => <article className="item-carrito" key={item.id}><div className="mini-icono">♫</div><div><h2>{item.nombre}</h2><p>{item.marca} · {item.modelo}</p><strong>{formatearCLP(item.precio)}</strong></div><div className="cantidad"><button aria-label={`Restar ${item.nombre}`} onClick={() => cambiarCantidad(item.id, item.cantidad - 1)}>−</button><span>{item.cantidad}</span><button aria-label={`Sumar ${item.nombre}`} onClick={() => cambiarCantidad(item.id, item.cantidad + 1)}>+</button></div><strong>{formatearCLP(item.precio * item.cantidad)}</strong><button className="texto-peligro" onClick={() => cambiarCantidad(item.id, 0)}>Eliminar</button></article>)}</div><aside className="resumen"><h2>Resumen</h2><p><span>Subtotal</span><strong>{formatearCLP(total)}</strong></p><p><span>Despacho</span><span>A calcular</span></p><hr /><p className="total"><span>Total</span><strong>{formatearCLP(total)}</strong></p><Link className="boton ancho" to="/checkout">Continuar al pago</Link></aside></div></section>;
+}

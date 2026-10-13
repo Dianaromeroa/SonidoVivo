@@ -1,0 +1,7 @@
+import { useStore } from "../context/StoreContext.jsx";
+import { formatearCLP } from "../utils/formato.js";
+
+export default function Vendedor() {
+  const { productos, pedidos } = useStore(); const disponibles = productos.filter((producto) => producto.stock > 0).length;
+  return <section><div className="page-heading"><p className="eyebrow">Operación de tienda</p><h1>Panel de vendedor</h1><p>Consulta el inventario disponible y los pedidos recientes.</p></div><div className="kpis"><article><span>Productos disponibles</span><strong>{disponibles}</strong></article><article><span>Sin stock</span><strong>{productos.length - disponibles}</strong></article><article><span>Pedidos por preparar</span><strong>{pedidos.filter((pedido) => pedido.estado === "Confirmado").length}</strong></article></div><section className="panel tabla-panel"><h2>Disponibilidad actual</h2><div className="tabla-responsive"><table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Precio</th></tr></thead><tbody>{productos.map((producto) => <tr key={producto.id}><td>{producto.id}</td><td>{producto.nombre}</td><td>{producto.categoria}</td><td className={producto.stock ? "" : "texto-peligro"}>{producto.stock}</td><td>{formatearCLP(producto.precio)}</td></tr>)}</tbody></table></div></section></section>;
+}
