@@ -2,3 +2,8 @@ node_modules/
 dist/
 coverage/
 .env
+
+# Material de referencia que no corresponde versionar en la entrega.
+informacion_relevante/Experiencia_2_Evaluacion_Parcial_2_DSY1104_2026-2/
+informacion_relevante/DSY1104 - Forma B - Catalogo Sonido Vivo.xlsx
+informacion_relevante/DSY1104 - Forma B - Tienda Sonido Vivo.docx
