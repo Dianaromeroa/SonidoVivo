@@ -33,20 +33,22 @@ Este documento registra el estado del proyecto y las tareas a realizar antes de 
 
 ## Prioridad 2 — Completar gestión de pedidos
 
+**Completado el 14 de octubre de 2026.**
+
 Actualmente un pedido se crea con estado `Confirmado` y se visualiza en los paneles. Para un flujo más completo:
 
-- Permitir al administrador y/o vendedor cambiar estado: `Confirmado` → `Preparación` → `Despacho` → `Entregado`.
-- Validar transiciones permitidas y persistirlas en `localStorage`.
-- Reflejar el estado real en `SeguimientoPedido`.
-- Mostrar fecha de actualización y, si corresponde, historial simple de cambios.
-- Agregar pruebas para cambios de estado y permisos de rol.
+- Administrador y vendedor pueden avanzar: `Confirmado` → `Preparación` → `Despacho` → `Entregado`.
+- Las transiciones consecutivas, permisos y persistencia en `localStorage` están validados.
+- `SeguimientoPedido` refleja las cuatro etapas, fecha de actualización e historial.
+- Hay pruebas para transiciones, persistencia y restricciones de rol en el contexto.
 
 ## Prioridad 3 — Mejoras de experiencia de administración
 
-- Reemplazar `window.confirm` al eliminar productos por un modal accesible y visualmente coherente.
-- Mostrar mensajes de éxito o error después de crear, editar y eliminar productos.
-- Agregar filtros por categoría y por estado de stock en Administración y Vendedor.
-- Considerar ordenamiento por nombre, precio o stock.
+**Completado, excepto la asociación de imágenes que queda fuera de esta iteración.**
+
+- Reemplazado `window.confirm` por un modal accesible y coherente.
+- Se muestran mensajes de éxito o error después de crear, editar, eliminar y avanzar pedidos.
+- Administración y Vendedor incluyen filtros por categoría/estado de stock y ordenamiento por nombre, precio o stock.
 - Permitir asociar una imagen existente desde `public/productos/` al crear o editar productos, sin implementar carga de archivos todavía.
 - Definir comportamiento de productos creados localmente después de reiniciar datos del navegador.
 
@@ -67,8 +69,10 @@ Probar manualmente en navegador los siguientes flujos antes de entregar:
 
 ## Prioridad 5 — Accesibilidad y calidad visual
 
+**Completado para los flujos intervenidos; quedan pendientes las revisiones asociadas a imágenes.**
+
 - Revisar navegación solo con teclado: foco visible, menú, botones, modales, formularios y cierre de modal.
-- Añadir gestión de foco al abrir/cerrar modal y permitir cerrar con tecla Escape.
+- Los modales abiertos pueden cerrarse con Escape y están marcados como diálogos modales.
 - Verificar etiquetas asociadas a todos los campos y mensajes de error anunciables.
 - Confirmar contraste suficiente en textos, badges, alertas y botones de peligro.
 - Comprobar textos alternativos de las futuras imágenes.
@@ -90,10 +94,9 @@ Probar manualmente en navegador los siguientes flujos antes de entregar:
 
 - Renderizado de imagen real y fallback cuando no exista archivo.
 - Selección/asociación de imagen desde Administración.
-- Cambio de estado de pedidos y persistencia.
-- Restricciones de rol para acciones de pedidos.
-- Modal de eliminación y sus rutas de cancelar/confirmar.
-- Casos de filtros y ordenamiento si se agregan.
+- Cambio de estado de pedidos, persistencia y restricciones de rol.
+- Modal de eliminación y confirmación.
+- Casos de filtros y ordenamiento en interfaces operativas.
 
 ## Prioridad 7 — Documentación y entrega
 

@@ -3,6 +3,7 @@ import { productosIniciales } from "../data/productosIniciales.js";
 import { guardar, leer } from "../services/storageService.js";
 import { calcularResumenCarrito, cuponesSonidoVivo, sincronizarCarritoConInventario } from "../utils/carrito.js";
 import { validarProductoParaEdicion } from "../utils/validaciones.js";
+import { historialInicialPedido, normalizarPedido, transicionPedidoPermitida } from "../utils/pedidos.js";
 
 const StoreContext = createContext(null);
 const claves = { inventario: "sonidoVivo.inventario", carrito: "sonidoVivo.carrito", pedidos: "sonidoVivo.pedidos", descuento: "sonidoVivo.descuento" };
@@ -10,7 +11,7 @@ const claves = { inventario: "sonidoVivo.inventario", carrito: "sonidoVivo.carri
 export function StoreProvider({ children }) {
   const [productos, setProductos] = useState(() => leer(claves.inventario, productosIniciales));
   const [carrito, setCarrito] = useState(() => leer(claves.carrito, []));
-  const [pedidos, setPedidos] = useState(() => leer(claves.pedidos, []));
+  const [pedidos, setPedidos] = useState(() => leer(claves.pedidos, []).map(normalizarPedido));
   const [descuento, setDescuento] = useState(() => leer(claves.descuento, null));
   useEffect(() => guardar(claves.inventario, productos), [productos]);
   useEffect(() => guardar(claves.carrito, carrito), [carrito]);
@@ -66,7 +67,8 @@ export function StoreProvider({ children }) {
     }
     const id = `SV-${String(Date.now()).slice(-6)}`;
     const resumen = calcularResumenCarrito(carritoValidado, descuento);
-    const pedido = { id, fecha: new Date().toISOString(), cliente: datos, items: carritoValidado, subtotal: resumen.subtotal, descuento, descuentoMonto: resumen.montoDescuento, total: resumen.totalFinal, estado: "Confirmado" };
+    const fecha = new Date().toISOString();
+    const pedido = { id, fecha, fechaActualizacion: fecha, historial: historialInicialPedido(fecha), cliente: datos, items: carritoValidado, subtotal: resumen.subtotal, descuento, descuentoMonto: resumen.montoDescuento, total: resumen.totalFinal, estado: "Confirmado" };
     setProductos((items) => items.map((producto) => {
       const comprado = carritoValidado.find((item) => item.id === producto.id);
       return comprado ? { ...producto, stock: Math.max(0, producto.stock - comprado.cantidad) } : producto;
@@ -112,8 +114,22 @@ export function StoreProvider({ children }) {
     setProductos((items) => items.filter((item) => item.id !== id));
     return { ok: true };
   }
+  function actualizarEstadoPedido(id, estadoNuevo, rol) {
+    if (!["ADMIN", "VENDEDOR"].includes(rol)) return { ok: false, mensaje: "No tienes permiso para actualizar pedidos." };
+    const pedido = pedidos.find((item) => item.id === id);
+    if (!pedido) return { ok: false, mensaje: "No encontramos el pedido que deseas actualizar." };
+    if (!transicionPedidoPermitida(pedido.estado, estadoNuevo)) return { ok: false, mensaje: "El pedido solo puede avanzar al siguiente estado del flujo." };
+    const fecha = new Date().toISOString();
+    setPedidos((items) => items.map((item) => item.id === id ? {
+      ...item,
+      estado: estadoNuevo,
+      fechaActualizacion: fecha,
+      historial: [...(item.historial || historialInicialPedido(item.fecha)), { estado: estadoNuevo, fecha }],
+    } : item));
+    return { ok: true };
+  }
   const resumen = useMemo(() => calcularResumenCarrito(carrito, descuento), [carrito, descuento]);
-  const valor = useMemo(() => ({ productos, carrito, pedidos, descuento, agregarAlCarrito, cambiarCantidad, vaciarCarrito, aplicarCupon, confirmarCompra, crearProducto, actualizarProducto, eliminarProducto, ...resumen }), [productos, carrito, pedidos, descuento, resumen]);
+  const valor = useMemo(() => ({ productos, carrito, pedidos, descuento, agregarAlCarrito, cambiarCantidad, vaciarCarrito, aplicarCupon, confirmarCompra, crearProducto, actualizarProducto, eliminarProducto, actualizarEstadoPedido, ...resumen }), [productos, carrito, pedidos, descuento, resumen]);
   return <StoreContext.Provider value={valor}>{children}</StoreContext.Provider>;
 }
 export function useStore() { return useContext(StoreContext); }

@@ -30,3 +30,23 @@ describe("StoreContext: CRUD de productos", () => {
     });
   });
 });
+
+describe("StoreContext: pedidos", () => {
+  it("avanza un pedido, guarda historial y rechaza permisos o saltos", async () => {
+    const pedido = { id: "SV-000001", fecha: "2026-10-14T10:00:00.000Z", estado: "Confirmado", cliente: { nombre: "Ana" }, items: [], total: 1000 };
+    localStorage.setItem("sonidoVivo.pedidos", JSON.stringify([pedido]));
+    const { result } = renderHook(() => useStore(), { wrapper });
+    let sinPermiso;
+    let salto;
+    let avance;
+    act(() => {
+      sinPermiso = result.current.actualizarEstadoPedido("SV-000001", "Preparación", "CLIENTE");
+      salto = result.current.actualizarEstadoPedido("SV-000001", "Despacho", "VENDEDOR");
+      avance = result.current.actualizarEstadoPedido("SV-000001", "Preparación", "VENDEDOR");
+    });
+    expect(sinPermiso.ok).toBe(false);
+    expect(salto.ok).toBe(false);
+    expect(avance).toEqual({ ok: true });
+    await waitFor(() => expect(result.current.pedidos[0]).toMatchObject({ estado: "Preparación", historial: [{ estado: "Confirmado" }, { estado: "Preparación" }] }));
+  });
+});
