@@ -290,7 +290,7 @@ export default function Inicio() {
 
           <Link
             className="boton"
-            to="/contacto"
+              to="/reparaciones"
           >
             Consultar reparación →
           </Link>

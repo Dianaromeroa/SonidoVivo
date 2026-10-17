@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { formatearCLP } from "../utils/formato.js";
 import { useStore } from "../context/StoreContext.jsx";
+import ImagenProducto from "./ImagenProducto.jsx";
 
 
 export default function ProductoCard({ producto }) {
@@ -9,13 +10,7 @@ export default function ProductoCard({ producto }) {
   const { agregarAlCarrito } = useStore();
 
   const [mensaje, setMensaje] = useState(null);
-  const [errorImagen, setErrorImagen] = useState(false);
-
   const sinStock = producto.stock < 1;
-
-  const imagenProducto =
-    producto.imagen ||
-    `/productos/${producto.id.toLowerCase()}.webp`;
 
 
   function agregar() {
@@ -41,26 +36,12 @@ export default function ProductoCard({ producto }) {
 
       <div className="producto-imagen-contenedor">
 
-        {!errorImagen ? (
-
-          <img
-            src={imagenProducto}
-            alt={producto.nombre}
-            className="producto-imagen"
-            loading="lazy"
-            onError={() => setErrorImagen(true)}
-          />
-
-        ) : (
-
-          <div
-            className="producto-icono producto-icono-fallback"
-            aria-hidden="true"
-          >
-            ♫
-          </div>
-
-        )}
+        <ImagenProducto
+          producto={producto}
+          alt={`${producto.nombre} ${producto.marca} ${producto.modelo}`}
+          className="producto-imagen"
+          fallbackClassName="producto-icono producto-icono-fallback"
+        />
 
       </div>
 

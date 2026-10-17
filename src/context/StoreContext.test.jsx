@@ -1,9 +1,10 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { StoreProvider, useStore } from "./StoreContext.jsx";
+import { AuthProvider, useAuth } from "./AuthContext.jsx";
 
 const producto = { id: "GA001", nombre: "Guitarra", categoria: "Guitarras", marca: "Yamaha", modelo: "F310", precio: 129990, stock: 8, descripcion: "Prueba", oferta: false };
-const wrapper = ({ children }) => <StoreProvider>{children}</StoreProvider>;
+const wrapper = ({ children }) => <AuthProvider><StoreProvider>{children}</StoreProvider></AuthProvider>;
 
 describe("StoreContext: CRUD de productos", () => {
   it("crea productos normalizados y rechaza un código duplicado", async () => {
@@ -20,14 +21,38 @@ describe("StoreContext: CRUD de productos", () => {
 
   it("elimina el producto del inventario y del carrito sincronizado", async () => {
     localStorage.setItem("sonidoVivo.inventario", JSON.stringify([producto]));
-    localStorage.setItem("sonidoVivo.carrito", JSON.stringify([{ ...producto, cantidad: 2 }]));
+    localStorage.setItem("sonidoVivo.sesion", JSON.stringify({ nombre: "Ana", correo: "ana@sonidovivo.cl", rol: "CLIENTE" }));
+    localStorage.setItem("sonidoVivo.carrito.ana@sonidovivo.cl", JSON.stringify([{ ...producto, cantidad: 2 }]));
     const { result } = renderHook(() => useStore(), { wrapper });
     act(() => { result.current.eliminarProducto("GA001"); });
     await waitFor(() => {
       expect(result.current.productos).toEqual([]);
       expect(result.current.carrito).toEqual([]);
-      expect(JSON.parse(localStorage.getItem("sonidoVivo.carrito"))).toEqual([]);
+      expect(JSON.parse(localStorage.getItem("sonidoVivo.carrito.ana@sonidovivo.cl"))).toEqual([]);
     });
+  });
+});
+
+describe("StoreContext: carrito por cuenta", () => {
+  it("vacía el carrito al cerrar sesión y restaura solamente el de la misma cliente", async () => {
+    localStorage.setItem("sonidoVivo.inventario", JSON.stringify([producto]));
+    localStorage.setItem("sonidoVivo.usuarios", JSON.stringify([
+      { nombre: "Ana", correo: "ana@sonidovivo.cl", password: "ana123", rol: "CLIENTE" },
+      { nombre: "Bea", correo: "bea@sonidovivo.cl", password: "bea123", rol: "CLIENTE" },
+    ]));
+    const { result } = renderHook(() => ({ tienda: useStore(), auth: useAuth() }), { wrapper });
+    act(() => { result.current.auth.iniciarSesion("ana@sonidovivo.cl", "ana123"); });
+    await waitFor(() => expect(result.current.tienda.carrito).toEqual([]));
+    act(() => { result.current.tienda.agregarAlCarrito(producto, 2); });
+    await waitFor(() => expect(result.current.tienda.carrito).toHaveLength(1));
+    act(() => { result.current.auth.cerrarSesion(); });
+    await waitFor(() => expect(result.current.tienda.carrito).toEqual([]));
+    act(() => { result.current.auth.iniciarSesion("admin@sonidovivo.cl", "admin123"); });
+    await waitFor(() => expect(result.current.tienda.carrito).toEqual([]));
+    act(() => { result.current.auth.cerrarSesion(); result.current.auth.iniciarSesion("ana@sonidovivo.cl", "ana123"); });
+    await waitFor(() => expect(result.current.tienda.carrito).toEqual([expect.objectContaining({ id: "GA001", cantidad: 2 })]));
+    act(() => { result.current.auth.cerrarSesion(); result.current.auth.iniciarSesion("bea@sonidovivo.cl", "bea123"); });
+    await waitFor(() => expect(result.current.tienda.carrito).toEqual([]));
   });
 });
 

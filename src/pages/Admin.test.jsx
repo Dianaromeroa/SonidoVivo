@@ -10,7 +10,7 @@ const actualizarEstadoPedido = vi.fn(() => ({ ok: true }));
 vi.mock("../context/StoreContext.jsx", () => ({
   useStore: () => ({
     productos: [{ id: "GA001", nombre: "Guitarra", categoria: "Guitarras", marca: "Yamaha", modelo: "F310", precio: 129990, stock: 8, descripcion: "Prueba" }],
-    pedidos: [], crearProducto, actualizarProducto, eliminarProducto, actualizarEstadoPedido,
+    pedidos: [{ id: "SV-000001", fecha: "2026-10-16T12:00:00.000Z", estado: "Confirmado", total: 129990, cliente: { nombre: "Ana Música", correo: "ana@sonidovivo.cl", direccion: "Calle Marina 123", comuna: "Viña del Mar" }, items: [{ id: "GA001", nombre: "Guitarra", marca: "Yamaha", modelo: "F310", precio: 129990, cantidad: 1 }] }], crearProducto, actualizarProducto, eliminarProducto, actualizarEstadoPedido,
   }),
 }));
 
@@ -36,5 +36,18 @@ describe("Admin", () => {
     expect(screen.getByRole("dialog", { name: "Eliminar producto" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Eliminar producto" }));
     expect(eliminarProducto).toHaveBeenCalledWith("GA001");
+  });
+
+  it("permite revisar el despacho y exige confirmación antes de avanzar un pedido", () => {
+    render(<Admin />);
+    fireEvent.click(screen.getByRole("button", { name: "Ver detalle" }));
+    expect(screen.getByRole("dialog", { name: "Detalle de despacho" })).toBeInTheDocument();
+    expect(screen.getByText("Calle Marina 123")).toBeInTheDocument();
+    expect(screen.getAllByText("Guitarra").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Avanzar a Preparación" }));
+    expect(screen.getByRole("dialog", { name: "¿Avanzar este pedido?" })).toBeInTheDocument();
+    expect(actualizarEstadoPedido).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Sí, avanzar pedido" }));
+    expect(actualizarEstadoPedido).toHaveBeenCalledWith("SV-000001", "Preparación", "ADMIN");
   });
 });

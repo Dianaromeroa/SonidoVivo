@@ -2,6 +2,8 @@ import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
 import { useStore } from "../context/StoreContext.jsx";
 import { formatearCLP } from "../utils/formato.js";
+import ProductoCard from "../components/ProductoCard.jsx";
+import ImagenProducto from "../components/ImagenProducto.jsx";
 
 
 export default function DetalleProducto() {
@@ -15,7 +17,7 @@ export default function DetalleProducto() {
 
   const [cantidad, setCantidad] = useState(1);
   const [mensaje, setMensaje] = useState(null);
-  const [imagenConError, setImagenConError] = useState("");
+  const [inicioSimilares, setInicioSimilares] = useState(0);
 
   const producto =
     productos.find((item) => item.id === id);
@@ -44,14 +46,8 @@ export default function DetalleProducto() {
 
 
   const sinStock = producto.stock < 1;
-
-  const imagenProducto =
-    producto.imagen ||
-    `/productos/${producto.id.toLowerCase()}.webp`;
-
-  const mostrarImagen =
-    imagenConError !== imagenProducto;
-
+  const similares = productos.filter((item) => item.id !== producto.id && item.categoria === producto.categoria);
+  const visibles = similares.slice(inicioSimilares, inicioSimilares + 3);
 
   function agregar() {
 
@@ -80,34 +76,19 @@ export default function DetalleProducto() {
 
   return (
 
-    <section className="detalle">
+    <><section className="detalle">
 
 
       {/* IMAGEN */}
 
       <div className="detalle-imagen-contenedor">
 
-        {mostrarImagen ? (
-
-          <img
-            src={imagenProducto}
-            alt={producto.nombre}
-            className="detalle-imagen"
-            onError={() =>
-              setImagenConError(imagenProducto)
-            }
-          />
-
-        ) : (
-
-          <div
-            className="detalle-icono"
-            aria-hidden="true"
-          >
-            ♫
-          </div>
-
-        )}
+        <ImagenProducto
+          producto={producto}
+          alt={`${producto.nombre} ${producto.marca} ${producto.modelo}`}
+          className="detalle-imagen"
+          fallbackClassName="detalle-icono"
+        />
 
       </div>
 
@@ -218,7 +199,7 @@ export default function DetalleProducto() {
 
       </div>
 
-    </section>
+    </section>{similares.length > 0 && <section className="productos-similares"><div className="productos-similares-cabecera"><div><p className="eyebrow">Sigue explorando</p><h2>Productos similares</h2><p>Más opciones de {producto.categoria.toLowerCase()} para complementar tu elección.</p></div>{similares.length > 3 && <div className="carrusel-controles"><button type="button" aria-label="Ver productos similares anteriores" disabled={inicioSimilares === 0} onClick={() => setInicioSimilares((inicio) => Math.max(0, inicio - 3))}>←</button><button type="button" aria-label="Ver más productos similares" disabled={inicioSimilares + 3 >= similares.length} onClick={() => setInicioSimilares((inicio) => Math.min(similares.length - 3, inicio + 3))}>→</button></div>}</div><div className="carrusel-similares">{visibles.map((item) => <ProductoCard key={item.id} producto={item} />)}</div></section>}</>
 
   );
 }

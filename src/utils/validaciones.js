@@ -31,3 +31,14 @@ export function validarProductoParaEdicion(producto) {
   if (!String(producto.stock ?? "").trim() || !Number.isInteger(stock) || stock < 0) errores.stock = "Ingresa un stock entero mayor o igual a cero.";
   return errores;
 }
+
+export function validarSolicitudReparacion(datos) {
+  const errores = {};
+  if (datos.nombre.trim().length < 3) errores.nombre = "Ingresa tu nombre completo.";
+  if (!validarCorreo(datos.correo)) errores.correo = "Ingresa un correo válido.";
+  if (datos.telefono.trim().replace(/\D/g, "").length < 8) errores.telefono = "Ingresa un teléfono de contacto válido.";
+  if (!datos.tipoInstrumento) errores.tipoInstrumento = "Selecciona el tipo de instrumento.";
+  if (!datos.servicio) errores.servicio = "Selecciona el servicio que necesitas.";
+  if (datos.descripcion.trim().length < 15) errores.descripcion = "Describe la solicitud con al menos 15 caracteres.";
+  return errores;
+}

@@ -1,22 +1,43 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { productosIniciales } from "../data/productosIniciales.js";
-import { guardar, leer } from "../services/storageService.js";
+import { eliminar, guardar, leer } from "../services/storageService.js";
 import { calcularResumenCarrito, cuponesSonidoVivo, sincronizarCarritoConInventario } from "../utils/carrito.js";
 import { validarProductoParaEdicion } from "../utils/validaciones.js";
 import { historialInicialPedido, normalizarPedido, transicionPedidoPermitida } from "../utils/pedidos.js";
+import { useAuth } from "./AuthContext.jsx";
 
 const StoreContext = createContext(null);
 const claves = { inventario: "sonidoVivo.inventario", carrito: "sonidoVivo.carrito", pedidos: "sonidoVivo.pedidos", descuento: "sonidoVivo.descuento" };
+const clavePorCliente = (clave, correo) => `${clave}.${correo}`;
+
+function obtenerClaveCliente(clave, sesion) {
+  const correo = sesion?.rol === "CLIENTE" ? sesion.correo?.trim().toLowerCase() : "";
+  return correo ? clavePorCliente(clave, correo) : null;
+}
 
 export function StoreProvider({ children }) {
+  const auth = useAuth();
+  const sesion = auth?.sesion;
+  const claveCarritoCliente = obtenerClaveCliente(claves.carrito, sesion);
+  const claveDescuentoCliente = obtenerClaveCliente(claves.descuento, sesion);
   const [productos, setProductos] = useState(() => leer(claves.inventario, productosIniciales));
-  const [carrito, setCarrito] = useState(() => leer(claves.carrito, []));
+  const [carrito, setCarrito] = useState(() => claveCarritoCliente ? leer(claveCarritoCliente, []) : []);
   const [pedidos, setPedidos] = useState(() => leer(claves.pedidos, []).map(normalizarPedido));
-  const [descuento, setDescuento] = useState(() => leer(claves.descuento, null));
+  const [descuento, setDescuento] = useState(() => claveDescuentoCliente ? leer(claveDescuentoCliente, null) : null);
   useEffect(() => guardar(claves.inventario, productos), [productos]);
-  useEffect(() => guardar(claves.carrito, carrito), [carrito]);
+  useEffect(() => {
+    if (!claveCarritoCliente) return;
+    guardar(claveCarritoCliente, carrito);
+  }, [carrito]);
   useEffect(() => guardar(claves.pedidos, pedidos), [pedidos]);
-  useEffect(() => { if (descuento) guardar(claves.descuento, descuento); else localStorage.removeItem(claves.descuento); }, [descuento]);
+  useEffect(() => {
+    if (!claveDescuentoCliente) return;
+    if (descuento) guardar(claveDescuentoCliente, descuento); else eliminar(claveDescuentoCliente);
+  }, [descuento]);
+  useEffect(() => {
+    setCarrito(claveCarritoCliente ? leer(claveCarritoCliente, []) : []);
+    setDescuento(claveDescuentoCliente ? leer(claveDescuentoCliente, null) : null);
+  }, [claveCarritoCliente, claveDescuentoCliente]);
   useEffect(() => {
     setCarrito((actual) => {
       const sincronizado = sincronizarCarritoConInventario(actual, productos);

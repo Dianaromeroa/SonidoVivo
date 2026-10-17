@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validarCheckout, validarCorreo, validarProductoParaEdicion } from "./validaciones.js";
+import { validarCheckout, validarCorreo, validarProductoParaEdicion, validarSolicitudReparacion } from "./validaciones.js";
 
 describe("validaciones", () => {
   it("acepta un correo válido", () => expect(validarCorreo("cliente@sonidovivo.cl")).toBe(true));
@@ -17,5 +17,10 @@ describe("validaciones", () => {
   it("acepta los campos válidos de un producto editable", () => {
     const errores = validarProductoParaEdicion({ id: "GA001", nombre: "Guitarra", categoria: "Guitarras", marca: "Marca", modelo: "Modelo", precio: 129990, stock: 3 });
     expect(errores).toEqual({});
+  });
+
+  it("valida los datos esenciales de una solicitud de reparación", () => {
+    const errores = validarSolicitudReparacion({ nombre: "", correo: "sin-formato", telefono: "123", tipoInstrumento: "", servicio: "", descripcion: "corta" });
+    expect(Object.keys(errores)).toEqual(expect.arrayContaining(["nombre", "correo", "telefono", "tipoInstrumento", "servicio", "descripcion"]));
   });
 });
