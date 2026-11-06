@@ -1,17 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AuthProvider, useAuth } from "./AuthContext.jsx";
 
-const wrapper = ({ children }) => <AuthProvider>{children}</AuthProvider>;
+vi.mock("../services/authService.js", () => ({
+  iniciarSesionApi: vi.fn().mockResolvedValue({ token: "jwt-prueba", usuario: { id: 7, nombre: "Ana Música", email: "ana@sonidovivo.cl", rol: "CLIENTE" } }),
+  registrarApi: vi.fn().mockResolvedValue({ id: 7, nombre: "Ana Música", email: "ana@sonidovivo.cl", rol: "CLIENTE" }),
+}));
 
-describe("AuthContext", () => {
-  it("permite registrar e iniciar sesión con una cuenta cliente local", () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    let respuesta;
-    act(() => { respuesta = result.current.registrar({ nombre: "Ana Música", correo: "ANA@SONIDOVIVO.CL", telefono: "+56 9 1234 5678", region: "Valparaíso", comuna: "Viña del Mar", direccion: "Calle Marina 123", password: "secreta" }); });
-    expect(respuesta).toEqual({ ok: true, usuario: { nombre: "Ana Música", correo: "ana@sonidovivo.cl", telefono: "+56 9 1234 5678", region: "Valparaíso", comuna: "Viña del Mar", direccion: "Calle Marina 123", rol: "CLIENTE" } });
-    expect(result.current.sesion).toEqual(respuesta.usuario);
-    act(() => result.current.cerrarSesion());
-    expect(result.current.iniciarSesion("ana@sonidovivo.cl", "secreta")).toEqual(respuesta.usuario);
-  });
-});
+const wrapper = ({ children }) => <AuthProvider>{children}</AuthProvider>;
+describe("AuthContext", () => { it("inicia sesión con el JWT emitido por la API", async () => { const { result } = renderHook(() => useAuth(), { wrapper }); let usuario; await act(async () => { usuario = await result.current.iniciarSesion("ANA@SONIDOVIVO.CL", "secreta"); }); expect(usuario).toMatchObject({ nombre: "Ana Música", correo: "ana@sonidovivo.cl", rol: "CLIENTE" }); expect(localStorage.getItem("sonidoVivo.token")).toBe("jwt-prueba"); expect(result.current.sesion).toMatchObject({ correo: "ana@sonidovivo.cl" }); }); });

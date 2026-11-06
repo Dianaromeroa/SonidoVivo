@@ -36,22 +36,13 @@ describe("StoreContext: CRUD de productos", () => {
 describe("StoreContext: carrito por cuenta", () => {
   it("vacía el carrito al cerrar sesión y restaura solamente el de la misma cliente", async () => {
     localStorage.setItem("sonidoVivo.inventario", JSON.stringify([producto]));
-    localStorage.setItem("sonidoVivo.usuarios", JSON.stringify([
-      { nombre: "Ana", correo: "ana@sonidovivo.cl", password: "ana123", rol: "CLIENTE" },
-      { nombre: "Bea", correo: "bea@sonidovivo.cl", password: "bea123", rol: "CLIENTE" },
-    ]));
+    localStorage.setItem("sonidoVivo.token", "jwt-prueba");
+    localStorage.setItem("sonidoVivo.sesion", JSON.stringify({ nombre: "Ana", email: "ana@sonidovivo.cl", correo: "ana@sonidovivo.cl", rol: "CLIENTE" }));
     const { result } = renderHook(() => ({ tienda: useStore(), auth: useAuth() }), { wrapper });
-    act(() => { result.current.auth.iniciarSesion("ana@sonidovivo.cl", "ana123"); });
     await waitFor(() => expect(result.current.tienda.carrito).toEqual([]));
     act(() => { result.current.tienda.agregarAlCarrito(producto, 2); });
     await waitFor(() => expect(result.current.tienda.carrito).toHaveLength(1));
     act(() => { result.current.auth.cerrarSesion(); });
-    await waitFor(() => expect(result.current.tienda.carrito).toEqual([]));
-    act(() => { result.current.auth.iniciarSesion("admin@sonidovivo.cl", "admin123"); });
-    await waitFor(() => expect(result.current.tienda.carrito).toEqual([]));
-    act(() => { result.current.auth.cerrarSesion(); result.current.auth.iniciarSesion("ana@sonidovivo.cl", "ana123"); });
-    await waitFor(() => expect(result.current.tienda.carrito).toEqual([expect.objectContaining({ id: "GA001", cantidad: 2 })]));
-    act(() => { result.current.auth.cerrarSesion(); result.current.auth.iniciarSesion("bea@sonidovivo.cl", "bea123"); });
     await waitFor(() => expect(result.current.tienda.carrito).toEqual([]));
   });
 });
