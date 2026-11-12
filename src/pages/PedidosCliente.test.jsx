@@ -16,6 +16,7 @@ function renderApp(ruta) {
 describe("accesos de seguimiento para clientes", () => {
   it("muestra Mis pedidos a un cliente y filtra compras de otros correos", async () => {
     localStorage.setItem("sonidoVivo.sesion", JSON.stringify({ nombre: "Ana Música", correo: "ana@sonidovivo.cl", rol: "CLIENTE" }));
+    localStorage.setItem("sonidoVivo.auth.token", "token-prueba");
     vi.mocked(api.listarMisPedidos).mockResolvedValue([pedidoAna]);
     renderApp("/mis-pedidos");
     expect(screen.getByRole("heading", { name: "Mis pedidos" })).toBeInTheDocument();
