@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import Vendedor from "./Vendedor.jsx";
 
 vi.mock("../context/StoreContext.jsx", () => ({
@@ -22,7 +22,7 @@ describe("Vendedor", () => {
     expect(screen.queryByText("Guitarra Folk")).not.toBeInTheDocument();
   });
 
-  it("muestra el detalle y solicita confirmación antes de avanzar un pedido", () => {
+  it("muestra el detalle y solicita confirmación antes de avanzar un pedido", async () => {
     render(<Vendedor />);
     expect(screen.queryByRole("button", { name: "Avanzar" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Ver detalle" }));
@@ -31,6 +31,6 @@ describe("Vendedor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Avanzar a Preparación" }));
     expect(screen.getByRole("dialog", { name: "¿Avanzar este pedido?" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Sí, avanzar pedido" }));
-    expect(screen.getByText("SV-000001 avanzó a Preparación.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("SV-000001 avanzó a Preparación.")).toBeInTheDocument());
   });
 });

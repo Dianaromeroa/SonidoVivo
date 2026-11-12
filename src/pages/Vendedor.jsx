@@ -23,9 +23,9 @@ export default function Vendedor() {
     return () => document.removeEventListener("keydown", cerrar);
   }, [pedidoDetalle, pedidoAConfirmar]);
 
-  function confirmarAvance() {
+  async function confirmarAvance() {
     const siguiente = siguienteEstadoPedido(pedidoAConfirmar.estado);
-    const resultado = actualizarEstadoPedido(pedidoAConfirmar.id, siguiente, "VENDEDOR");
+    const resultado = await actualizarEstadoPedido(pedidoAConfirmar.id, siguiente);
     setMensaje(resultado.ok ? `${pedidoAConfirmar.id} avanzó a ${siguiente}.` : resultado.mensaje);
     setPedidoAConfirmar(null);
   }

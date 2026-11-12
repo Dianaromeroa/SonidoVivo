@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import Admin from "./Admin.jsx";
 
-const crearProducto = vi.fn(() => ({ ok: true }));
-const actualizarProducto = vi.fn(() => ({ ok: true }));
-const eliminarProducto = vi.fn(() => ({ ok: true }));
-const actualizarEstadoPedido = vi.fn(() => ({ ok: true }));
+const crearProducto = vi.fn(async () => ({ ok: true }));
+const actualizarProducto = vi.fn(async () => ({ ok: true }));
+const eliminarProducto = vi.fn(async () => ({ ok: true }));
+const actualizarEstadoPedido = vi.fn(async () => ({ ok: true }));
 
 vi.mock("../context/StoreContext.jsx", () => ({
   useStore: () => ({
@@ -15,7 +15,7 @@ vi.mock("../context/StoreContext.jsx", () => ({
 }));
 
 describe("Admin", () => {
-  it("envía un nuevo producto con el campo de imagen reservado vacío", () => {
+  it("envía un nuevo producto con el campo de imagen reservado vacío", async () => {
     render(<Admin />);
     fireEvent.click(screen.getByRole("button", { name: /Nuevo producto/ }));
     const formulario = within(screen.getByRole("dialog", { name: "Nuevo producto" }));
@@ -27,18 +27,18 @@ describe("Admin", () => {
     fireEvent.change(formulario.getByLabelText("Precio (CLP)"), { target: { value: "299990" } });
     fireEvent.change(formulario.getByLabelText("Stock"), { target: { value: "4" } });
     fireEvent.click(formulario.getByRole("button", { name: "Crear producto" }));
-    expect(crearProducto).toHaveBeenCalledWith(expect.objectContaining({ id: "te001", imagen: "" }));
+    await waitFor(() => expect(crearProducto).toHaveBeenCalledWith(expect.objectContaining({ id: "te001", imagen: "" })));
   });
 
-  it("confirma la eliminación mediante un modal accesible", () => {
+  it("confirma la eliminación mediante un modal accesible", async () => {
     render(<Admin />);
     fireEvent.click(screen.getByRole("button", { name: "Eliminar" }));
     expect(screen.getByRole("dialog", { name: "Eliminar producto" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Eliminar producto" }));
-    expect(eliminarProducto).toHaveBeenCalledWith("GA001");
+    await waitFor(() => expect(eliminarProducto).toHaveBeenCalledWith("GA001"));
   });
 
-  it("permite revisar el despacho y exige confirmación antes de avanzar un pedido", () => {
+  it("permite revisar el despacho y exige confirmación antes de avanzar un pedido", async () => {
     render(<Admin />);
     fireEvent.click(screen.getByRole("button", { name: "Ver detalle" }));
     expect(screen.getByRole("dialog", { name: "Detalle de despacho" })).toBeInTheDocument();
@@ -48,6 +48,6 @@ describe("Admin", () => {
     expect(screen.getByRole("dialog", { name: "¿Avanzar este pedido?" })).toBeInTheDocument();
     expect(actualizarEstadoPedido).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Sí, avanzar pedido" }));
-    expect(actualizarEstadoPedido).toHaveBeenCalledWith("SV-000001", "Preparación", "ADMIN");
+    await waitFor(() => expect(actualizarEstadoPedido).toHaveBeenCalledWith("SV-000001", "Preparación"));
   });
 });
