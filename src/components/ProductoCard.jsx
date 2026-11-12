@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatearCLP } from "../utils/formato.js";
 import { useStore } from "../context/StoreContext.jsx";
 import ImagenProducto from "./ImagenProducto.jsx";
@@ -7,10 +7,12 @@ import ImagenProducto from "./ImagenProducto.jsx";
 
 export default function ProductoCard({ producto }) {
 
-  const { agregarAlCarrito } = useStore();
+  const { agregarAlCarrito, actualizacionCarrito } = useStore();
 
   const [mensaje, setMensaje] = useState(null);
   const sinStock = producto.stock < 1;
+
+  useEffect(() => { setMensaje(null); }, [actualizacionCarrito]);
 
 
   function agregar() {
