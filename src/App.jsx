@@ -18,6 +18,7 @@ import Contacto from "./pages/Contacto.jsx";
 import Admin from "./pages/Admin.jsx";
 import Vendedor from "./pages/Vendedor.jsx";
 import VendedorMensajes from "./pages/VendedorMensajes.jsx";
+import Perfil from "./pages/Perfil.jsx";
 import NoEncontrado from "./pages/NoEncontrado.jsx";
 
 export default function App() {
@@ -28,51 +29,21 @@ export default function App() {
         <Route path="catalogo" element={<Catalogo />} />
         <Route path="categorias" element={<Categorias />} />
         <Route path="reparaciones" element={<Reparaciones />} />
-        <Route
-          path="ofertas"
-          element={<Navigate to="/reparaciones" replace />}
-        />
+        <Route path="ofertas" element={<Navigate to="/reparaciones" replace />} />
         <Route path="producto/:id" element={<DetalleProducto />} />
         <Route path="carrito" element={<Carrito />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="compra-exitosa/:id" element={<CompraExitosa />} />
         <Route path="seguimiento" element={<ConsultarPedido />} />
         <Route path="seguimiento/:id" element={<SeguimientoPedido />} />
-        <Route
-          path="mis-pedidos"
-          element={
-            <RutaProtegida rol="CLIENTE">
-              <MisPedidos />
-            </RutaProtegida>
-          }
-        />
+        <Route path="mis-pedidos" element={<RutaProtegida rol="CLIENTE"><MisPedidos /></RutaProtegida>} />
+        <Route path="perfil" element={<RutaProtegida><Perfil /></RutaProtegida>} />
         <Route path="login" element={<Login />} />
         <Route path="registro" element={<Registro />} />
         <Route path="contacto" element={<Contacto />} />
-        <Route
-          path="admin"
-          element={
-            <RutaProtegida rol="ADMIN">
-              <Admin />
-            </RutaProtegida>
-          }
-        />
-        <Route
-          path="vendedor"
-          element={
-            <RutaProtegida rol="VENDEDOR">
-              <Vendedor />
-            </RutaProtegida>
-          }
-        />
-        <Route
-          path="vendedor/mensajes"
-          element={
-            <RutaProtegida rol="VENDEDOR">
-              <VendedorMensajes />
-            </RutaProtegida>
-          }
-        />
+        <Route path="admin" element={<RutaProtegida rol="ADMIN"><Admin /></RutaProtegida>} />
+        <Route path="vendedor" element={<RutaProtegida rol="VENDEDOR"><Vendedor /></RutaProtegida>} />
+        <Route path="vendedor/mensajes" element={<RutaProtegida rol="VENDEDOR"><VendedorMensajes /></RutaProtegida>} />
         <Route path="*" element={<NoEncontrado />} />
       </Route>
     </Routes>

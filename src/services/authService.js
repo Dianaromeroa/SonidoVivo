@@ -1,0 +1,3 @@
+import { apiFetch } from "../api.js";
+export const iniciarSesionApi = (email, password) => apiFetch("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+export const registrarApi = (datos) => apiFetch("/auth/register", { method: "POST", body: JSON.stringify({ nombre: datos.nombre, email: datos.correo, password: datos.password, telefono: datos.telefono, direccion: datos.direccion, comuna: datos.comuna, region: datos.region }) });

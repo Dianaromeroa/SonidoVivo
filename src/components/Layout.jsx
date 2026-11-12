@@ -50,6 +50,7 @@ export default function Layout() {
     return <div className="cuenta-nav">
       <span aria-hidden="true">♙</span>
       <span>Hola, {nombreCorto}</span>
+      <NavLink to="/perfil" onClick={cerrarMenu}>Mi perfil</NavLink>
       {sesion.rol === "CLIENTE" && <NavLink to="/mis-pedidos" onClick={cerrarMenu}>Mis pedidos</NavLink>}
       {sesion.rol === "ADMIN" && <NavLink to="/admin" onClick={cerrarMenu}>Administración</NavLink>}
       {sesion.rol === "VENDEDOR" && <>
