@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Registro from "./Registro.jsx";
 import { AuthProvider } from "../context/AuthContext.jsx";
@@ -12,7 +12,7 @@ describe("Registro", () => {
     expect(screen.getByLabelText("Correo electrónico")).toBeInTheDocument();
   });
 
-  it("crea una cuenta cliente e inicia su sesión", () => {
+  it("crea una cuenta cliente mediante la API sin guardar contraseñas", async () => {
     render(<MemoryRouter><AuthProvider><Registro /></AuthProvider></MemoryRouter>);
     fireEvent.change(screen.getByLabelText("Nombre completo"), { target: { value: "Ana Música" } });
     fireEvent.change(screen.getByLabelText("Correo electrónico"), { target: { value: "ana@sonidovivo.cl" } });
@@ -23,7 +23,7 @@ describe("Registro", () => {
     fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "secreta" } });
     fireEvent.change(screen.getByLabelText("Confirmar contraseña"), { target: { value: "secreta" } });
     fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" }));
-    expect(JSON.parse(localStorage.getItem("sonidoVivo.usuarios"))).toEqual([expect.objectContaining({ nombre: "Ana Música", correo: "ana@sonidovivo.cl", comuna: "Viña del Mar", direccion: "Calle Marina 123", rol: "CLIENTE" })]);
-    expect(JSON.parse(localStorage.getItem("sonidoVivo.sesion"))).toEqual(expect.objectContaining({ nombre: "Ana Música", correo: "ana@sonidovivo.cl", comuna: "Viña del Mar", direccion: "Calle Marina 123", rol: "CLIENTE" }));
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+    expect(localStorage.getItem("sonidoVivo.usuarios")).toBeNull();
   });
 });
